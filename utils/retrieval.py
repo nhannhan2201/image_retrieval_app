@@ -1,18 +1,14 @@
 import torch
 import faiss
 import numpy as np
-import open_clip
 
 def load_model():
-    model_name = "ViT-B-16-SigLIP"  # ✅ bản nhẹ
-    model, _, preprocess = open_clip.create_model_and_transforms(
-        model_name, pretrained="laion400m_e32"
-    )
+    import open_clip
+    model_name = 'ViT-B-32'
+    model, _, preprocess = open_clip.create_model_and_transforms(model_name, pretrained='openai')
     tokenizer = open_clip.get_tokenizer(model_name)
-    
-    # ✅ Dùng half precision + CPU để giảm RAM
-    model = model.half().to("cpu")
     model.eval()
+    model = model.to('cpu')
     return model, tokenizer, preprocess
 
 def text_to_embedding(model, tokenizer, text: str):
@@ -20,9 +16,9 @@ def text_to_embedding(model, tokenizer, text: str):
     with torch.no_grad():
         features = model.encode_text(inputs)
         features = features / features.norm(dim=-1, keepdim=True)
-    return features.cpu().numpy().astype(np.float32)
+    return features.cpu().numpy()
 
 def query_images(model, tokenizer, index, text, top_k=5):
-    emb = text_to_embedding(model, tokenizer, text)
+    emb = text_to_embedding(model, tokenizer, text).astype(np.float32)
     D, I = index.search(emb, top_k)
     return I[0], D[0]
