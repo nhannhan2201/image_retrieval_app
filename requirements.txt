@@ -1,0 +1,9 @@
+streamlit
+torch
+open_clip_torch
+faiss-cpu
+pillow
+pandas
+rapidfuzz
+transformers
+
